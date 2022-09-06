@@ -5,6 +5,7 @@ from flask_cors import CORS
 import random
 
 from models import setup_db, Question, Category
+from models import *
 
 QUESTIONS_PER_PAGE = 10
 def paginate(request, selection):
@@ -49,16 +50,14 @@ def create_app(test_config=None):
     @app.route("/categories")
     def retrieve_categories():
         selection = Category.query.all()
-        current_question = paginate(request, selection)
-
-        if len(current_question) == 0:
-            abort(404)
+        list = {}
+        for i in selection:
+            list[i.id] == i.type
 
         return jsonify(
             {
                 "success": True,
-                "categories": current_question,
-                "total_categories": len(Question.query.all()),
+                "categories": list
             }
         )
  
@@ -75,7 +74,21 @@ def create_app(test_config=None):
     ten questions per page and pagination at the bottom of the screen for three pages.
     Clicking on the page numbers should update the questions.
     """
+    @app.route("/questions")
+    def retrieve_questions():
+      selection = Question.query.all()
+      current_questions = paginate(request, selection)
 
+      categories = Question.query.all()
+      list ={}
+      for i in categories:
+        list[i.id]=i.type
+      return jsonify({
+        "success": True,
+        "questions": current_questions,
+        "total_questions": len(selection),
+        "categories": list,
+        "current_category": None})
     """
     @TODO:
     Create an endpoint to DELETE question using a question ID.
@@ -83,6 +96,25 @@ def create_app(test_config=None):
     TEST: When you click the trash icon next to a question, the question will be removed.
     This removal will persist in the database and when you refresh the page.
     """
+    @app.route("/questions/<int:question_id>", methods=["DELETE"])
+    def delete_questions(question_id):
+        try:
+            q = Question.query.filter(Question.id == question_id).one_or_none()
+
+            if q is None:
+                abort(404)
+
+            q.delete()
+            
+
+            return jsonify(
+                {
+                    "success": True
+                }
+            )
+
+        except:
+            abort(422)
 
     """
     @TODO:
