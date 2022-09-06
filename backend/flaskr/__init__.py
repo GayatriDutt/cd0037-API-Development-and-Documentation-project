@@ -126,6 +126,33 @@ def create_app(test_config=None):
     the form will clear and the question will appear at the end of the last page
     of the questions list in the "List" tab.
     """
+    @app.route("/questions", methods=["POST"])
+    def create_question():
+        body = request.get_json()
+
+        new_question = body.get("question", None)
+        new_difficulty = body.get("difficulty", None)
+        new_answer = body.get("answer", None)
+        new_category = body.get("category", None)
+
+        try:
+            q = Question(question=new_question, answer=new_answer, difficulty=new_difficulty, category=new_category)
+            q.insert()
+
+            selection = Question.query.order_by(Question.id).all()
+            current_questions = paginate(request, selection)
+
+            return jsonify(
+                {
+                    "success": True,
+                    "created": q.id,
+                    "questions": current_questions,
+                    "total_questions": len(Question.query.all()),
+                }
+            )
+
+        except:
+            abort(422)
 
     """
     @TODO:
@@ -136,7 +163,28 @@ def create_app(test_config=None):
     TEST: Search by any phrase. The questions list will update to include
     only question that include that string within their question.
     Try using the word "title" to start.
+
     """
+    @app.route("/questions/search", methods=["POST"])
+    def search_for_question():
+     body = request.get_json()
+     search_term = body.get("searchTerm")
+
+     try: 
+      
+         selection = Question.query.filter(Question.question.ilike('%{}%'.format(search_term))).all()
+
+         current_questions = paginate(request, selection)
+
+         return jsonify({
+        "success": True,
+        "questions": current_questions,
+        "total_questions": len(selection),
+        "current_category": None
+      })
+
+     except:
+        abort(422)
 
     """
     @TODO:
@@ -146,6 +194,27 @@ def create_app(test_config=None):
     categories in the left column will cause only questions of that
     category to be shown.
     """
+    @app.route("/categories/<int:id>/questions")
+    def get_questions_by_category(id):
+      try: 
+        category = Category.query.get(id)
+
+        if category is None:
+          abort(404)
+       
+        selection = Question.query.filter_by(category=category.id).all()
+        current_questions = paginate(request, selection)
+
+        return jsonify({
+          "success": True,
+          "questions": current_questions,
+          "total_questions": len(selection),
+          "current_category": None
+          
+        })
+      except:
+       abort(422)
+
 
     """
     @TODO:
