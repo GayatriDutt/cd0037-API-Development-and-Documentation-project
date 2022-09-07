@@ -4,9 +4,10 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import random
 
-from models import setup_db, Question, Category
-from models import *
 
+from models import setup_db, Question, Category
+
+db = SQLAlchemy()
 QUESTIONS_PER_PAGE = 10
 def paginate(request, selection):
     page = request.args.get("page", 1, type=int)
@@ -228,11 +229,54 @@ def create_app(test_config=None):
     and shown whether they were correct or not.
     """
 
+    @app.route("/quizzes", methods=["POST"])
+    def play():
+     body = request.get_json()
+     previous_questions = body.get("previous_questions")
+     category = body.get("quiz_category")
+     try:
+      #if no category, show all
+       if category['id'] == 0: 
+         questions = Question.query.filter(
+                    Question.id.notin_((previous_questions))).all()
+      #show questions with related category
+       else:
+        questions = Question.query.filter_by(category=category['id']).filter(
+                        Question.id.notin_((previous_questions))).all()
+      #return random question   
+       if(questions):
+        question = random.choice(questions)
+
+       return jsonify({
+        "success": True,
+        'question':question.format()
+      })
+  
+     except:
+       abort(422)
+
     """
     @TODO:
     Create error handlers for all expected errors
     including 404 and 422.
     """
 
+    @app.errorhandler(404)
+    def not_found(error):
+     return (
+        jsonify({"success": False, "error": 404, "message": "not found"}),
+        404,
+    )
+
+    @app.errorhandler(422)
+    def unprocessable(error):
+      return (
+          jsonify({"success": False, "error": 422, "message": "unprocessable"}),
+          422,
+      )
+
+
     return app
 
+    if __name__ == '__init.py__':
+     app.run()
