@@ -24,6 +24,7 @@ def create_app(test_config=None):
     app = Flask(__name__)
     setup_db(app)
     CORS(app, resources={r"/api/*": {"origins": "*"}})
+    
 
     @app.after_request
     def after_request(response):
@@ -278,5 +279,3 @@ def create_app(test_config=None):
 
     return app
 
-    if __name__ == '__init.py__':
-     app.run()
