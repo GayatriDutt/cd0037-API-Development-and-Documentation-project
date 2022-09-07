@@ -14,7 +14,7 @@ def paginate(request, selection):
     start = (page - 1) * QUESTIONS_PER_PAGE
     end = start + QUESTIONS_PER_PAGE
 
-    questions = [questions.format() for question in selection]
+    questions = [question.format() for question in selection]
     current_question = questions[start:end]
 
     return current_question
@@ -49,12 +49,12 @@ def create_app(test_config=None):
     Create an endpoint to handle GET requests
     for all available categories.
     """
-    @app.route("/categories")
+    @app.route("/categories", methods=["GET"])
     def retrieve_categories():
         selection = Category.query.all()
         list = {}
         for i in selection:
-            list[i.id] == i.type
+            list[i.id] = i.type
 
         return jsonify(
             {
@@ -76,12 +76,12 @@ def create_app(test_config=None):
     ten questions per page and pagination at the bottom of the screen for three pages.
     Clicking on the page numbers should update the questions.
     """
-    @app.route("/questions")
+    @app.route("/questions", methods=["GET"])
     def retrieve_questions():
       selection = Question.query.all()
       current_questions = paginate(request, selection)
 
-      categories = Question.query.all()
+      categories = Category.query.all()
       list ={}
       for i in categories:
         list[i.id]=i.type
@@ -196,26 +196,25 @@ def create_app(test_config=None):
     categories in the left column will cause only questions of that
     category to be shown.
     """
-    @app.route("/categories/<int:id>/questions")
-    def get_questions_by_category(id):
-      try: 
-        category = Category.query.get(id)
+    @app.route("/categories/<int:category_id>/questions", methods=["GET"])
+    def get_questions_by_category(category_id):
 
-        if category is None:
-          abort(404)
-       
-        selection = Question.query.filter_by(category=category.id).all()
-        current_questions = paginate(request, selection)
+       id = Category.query.get(category_id)
+       questions = Question.query.filter_by(category=id).all()
 
-        return jsonify({
-          "success": True,
-          "questions": current_questions,
-          "total_questions": len(selection),
-          "current_category": None
-          
-        })
-      except:
-       abort(422)
+       list = []
+
+       for question in questions:
+            list.append(question.format())
+
+       return jsonify(
+            {
+                "success": True,
+                "questions": list,
+                "totalQuestions": len(list),
+                
+            }
+        )
 
 
     """
@@ -235,22 +234,20 @@ def create_app(test_config=None):
      body = request.get_json()
      previous_questions = body.get("previous_questions")
      category = body.get("quiz_category")
+     questions = Question.query.filter_by(category=category.get("id")).all()
+     
+     list=[]
      try:
-      #if no category, show all
-       if category['id'] == 0: 
-         questions = Question.query.filter(
-                    Question.id.notin_((previous_questions))).all()
-      #show questions with related category
-       else:
-        questions = Question.query.filter_by(category=category['id']).filter(
-                        Question.id.notin_((previous_questions))).all()
-      #return random question   
-       if(questions):
-        question = random.choice(questions)
+    
+       for i in questions:
+        if i.id not in previous_questions:
+            list.append(i)
+            break
+
 
        return jsonify({
         "success": True,
-        'question':question.format()
+        'question':list[0].format()
       })
   
      except:
@@ -274,6 +271,13 @@ def create_app(test_config=None):
       return (
           jsonify({"success": False, "error": 422, "message": "unprocessable"}),
           422,
+      )
+    
+    @app.errorhandler(405)
+    def method_not_allowed(error):
+      return (
+          jsonify({"success": False, "error": 405, "message": "method not allowed"}),
+          405,
       )
 
 
