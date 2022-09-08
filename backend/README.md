@@ -67,6 +67,32 @@ One note before you delve into your tasks: for each endpoint, you are expected t
 8. Create a `POST` endpoint to get questions to play the quiz. This endpoint should take a category and previous question parameters and return a random questions within the given category, if provided, and that is not one of the previous questions.
 9. Create error handlers for all expected errors including 400, 404, 422, and 500.
 
+# Error Handling
+
+## Not Found
+```json
+{
+    "success": False,
+    "error": 404, 
+    "message": "Not found"
+}
+
+```
+## Unprocessable entity
+```json
+{
+    "success": False,
+    "error": 424, 
+    "message": "unprocessable"
+}
+```
+# Method Not Allowed
+```json
+"success": False,
+    "error": 405, 
+    "message": "method not allowed"
+```
+
 ## Documenting your Endpoints
 
 You will need to provide detailed documentation of your API endpoints including the URL, request parameters, and the response body. Use the example below as a reference.
@@ -76,15 +102,18 @@ You will need to provide detailed documentation of your API endpoints including 
 1. General: Returns a list of categories
 2. Sample: curl http://localhost:5000/categories
 3. Example response:
-{
-  "categories":{
+```json
+ 
+  "categories": {
         "1": "Science",
         "2": "Art",
         "3": "Geography",
         "4": "History",
         "5": "Entertainment",
-        "6": "Sport}
-}
+        "6": "Sport"
+        }
+
+```
 # Get/questions
 1. General: Returns questions
 2. Sample:  curl http://localhost:5000/questions
@@ -110,7 +139,7 @@ You will need to provide detailed documentation of your API endpoints including 
         },
         {
             "answer": 1,
-            "category": 4,
+            "category": 1,
             "difficulty": 1,
             "id": 9,
             "question": "What is 4-3??"
@@ -118,6 +147,82 @@ You will need to provide detailed documentation of your API endpoints including 
         "totalQuestions": 2}
 
 
+```
+# Post/questions
+1. General: Allows creating a new question
+2. Sample: curl -X POST http://localhost:5000/questions -H "Content-Type: application/json" -d '{ "question": "New_question_1?", "answer": "New_answer_1", "category": 5, "difficulty": 2 }'
+3. Example response:
+```json
+{
+    "answer": "New_answer_1",
+    "category": 5,
+    "difficulty": 2,
+    "id": 53,
+    "question": "New_question_1?"
+}
+```
+
+#Post/questions/search
+1. General: Searches questions based on a search term
+2. Sample: curl -X POST http://localhost:5000/questions/search -H "Content-Type: application/json" -d '{ "searchTerm": "bears" }
+3. Example response:
+```json
+{
+    "currentCategory": null,
+    "questions": [
+        {
+            "answer": "North Pole",
+            "category": 4,
+            "difficulty": 2,
+            "id": 5,
+            "question": "Where do polar bears live?"
+        },]
+        "totalQuestions": 1
+}
+```
+# GET /categories/{category_id}/questions
+1. General: Searches for questions based on a specified category
+2. Sample: curl http://localhost:5000/categories/1/questions
+3. Example response:
+```json
+{
+    "currentCategory": "Science",
+    "questions": [
+        {
+            "answer": 1,
+            "category": 1,
+            "difficulty": 1,
+            "id": 9,
+            "question": "What is 4-3??"
+        }]
+        "totalQuestions": 1
+}
+```
+# DELETE /question/{id}
+1. General: Deletes question with specified ID
+2. Sample: curl -X DELETE http://localhost:5000/questions/20
+3. Example response:
+```json
+{
+    "deleted": 20,
+    "success": true
+}
+```
+
+# POST/quizzes
+1. General: Allows user to play the quiz 
+2. Sample: curl -X POST http://localhost:5000/quizzes -H "Content-Type: application/json" -d '{ "previous_questions": [20, 21], "quiz_category": { "type": "Science", "id": "1" } }'
+3. Example response:
+```json
+{"success": true,
+"question": {
+        "answer": "Water",
+        "category": 1,
+        "difficulty": 1,
+        "id": 16,
+        "question": "What is H2O?"
+    }
+}
 ```
 
 
