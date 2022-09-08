@@ -9,6 +9,8 @@ from models import setup_db, Question, Category
 
 db = SQLAlchemy()
 QUESTIONS_PER_PAGE = 10
+
+
 def paginate(request, selection):
     page = request.args.get("page", 1, type=int)
     start = (page - 1) * QUESTIONS_PER_PAGE
@@ -19,12 +21,12 @@ def paginate(request, selection):
 
     return current_question
 
+
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__)
     setup_db(app)
     CORS(app, resources={r"/api/*": {"origins": "*"}})
-    
 
     @app.after_request
     def after_request(response):
@@ -62,7 +64,6 @@ def create_app(test_config=None):
                 "categories": list
             }
         )
- 
 
     """
     @TODO:
@@ -82,9 +83,9 @@ def create_app(test_config=None):
       current_questions = paginate(request, selection)
 
       categories = Category.query.all()
-      list ={}
+      list = {}
       for i in categories:
-        list[i.id]=i.type
+        list[i.id] = i.type
       return jsonify({
         "success": True,
         "questions": current_questions,
@@ -107,7 +108,6 @@ def create_app(test_config=None):
                 abort(404)
 
             q.delete()
-            
 
             return jsonify(
                 {
@@ -138,7 +138,8 @@ def create_app(test_config=None):
         new_category = body.get("category", None)
 
         try:
-            q = Question(question=new_question, answer=new_answer, difficulty=new_difficulty, category=new_category)
+            q = Question(question=new_question, answer=new_answer,
+                         difficulty=new_difficulty, category=new_category)
             q.insert()
 
             selection = Question.query.order_by(Question.id).all()
@@ -172,9 +173,10 @@ def create_app(test_config=None):
      body = request.get_json()
      search_term = body.get("searchTerm")
 
-     try: 
-      
-         selection = Question.query.filter(Question.question.ilike('%{}%'.format(search_term))).all()
+     try:
+
+         selection = Question.query.filter(
+             Question.question.ilike('%{}%'.format(search_term))).all()
 
          current_questions = paginate(request, selection)
 
@@ -199,22 +201,28 @@ def create_app(test_config=None):
     @app.route("/categories/<int:category_id>/questions", methods=["GET"])
     def get_questions_by_category(category_id):
 
-       id = Category.query.get(category_id)
-       questions = Question.query.filter_by(category=id).all()
+        try:
 
-       list = []
+            c = Category.query.get(category_id)
+            
+            questions = Question.query.filter_by(category=str(c)).all()
+            list = []
 
-       for question in questions:
-            list.append(question.format())
+            for question in questions:
+                list.append(question.format())
 
-       return jsonify(
-            {
-                "success": True,
-                "questions": list,
-                "totalQuestions": len(list),
-                
-            }
-        )
+            return jsonify(
+                {
+                    "success": True,
+                    "questions": list,
+                    "totalQuestions": len(list),
+                    
+                }
+            )
+
+        except Exception as ex:
+            print("******", ex)
+            abort(422)
 
 
     """
@@ -231,33 +239,33 @@ def create_app(test_config=None):
 
     @app.route("/quizzes", methods=["POST"])
     def play():
-     body = request.get_json()
-     previous_questions = body.get("previous_questions")
-     category = body.get("quiz_category")
-     questions = Question.query.filter_by(category=category.get("id")).all()
-     
-     list=[]
-     try:
+
+        body = request.get_json() 
+        previous_questions = body.get("previous_questions")
+        category = body.get("quiz_category") 
+        questions = Question.query.filter_by(category=category.get("id")).all()
+        print()
+
+        next_questions = []
+
+        for question in questions:
+            if question.id not in previous_questions:
+                next_questions.append(question)
+                
+                break
+
+        return jsonify({"question": next_questions[0].format()})
+
+
+
+        
     
-       for i in questions:
-        if i.id not in previous_questions:
-            list.append(i)
-            break
-
-
-       return jsonify({
-        "success": True,
-        'question':list[0].format()
-      })
-  
-     except:
-       abort(422)
-
     """
     @TODO:
     Create error handlers for all expected errors
     including 404 and 422.
     """
+
 
     @app.errorhandler(404)
     def not_found(error):
@@ -279,7 +287,6 @@ def create_app(test_config=None):
           jsonify({"success": False, "error": 405, "message": "method not allowed"}),
           405,
       )
-
-
+        
     return app
 

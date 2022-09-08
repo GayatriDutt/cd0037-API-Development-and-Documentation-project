@@ -86,7 +86,7 @@ One note before you delve into your tasks: for each endpoint, you are expected t
     "message": "unprocessable"
 }
 ```
-# Method Not Allowed
+## Method Not Allowed
 ```json
     "success": "False",
     "error": 405, 

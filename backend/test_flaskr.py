@@ -37,12 +37,12 @@ class TriviaTestCase(unittest.TestCase):
         self.search_test_no_results = {"searchTerm": "no results"}
 
         self.new_quiz = {
-        "previous_questions": [],
-        "quiz_category": {"type": 'Science' , "id": 3}
+        "previous_questions": [20, 21],
+        "quiz_category": {"type": "Science", "id": "1"}
         }
         self.error_quiz = {
-        "previous_questions": [],
-        "quiz_category": {}
+        "previous_questions": [0],
+        "quiz_category": {""}
         }
 
         # binds the app to the current context
@@ -68,6 +68,15 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data["success"], True)
         self.assertTrue(data["categories"])
+    
+    def test_retrieve_category_error(self):
+        res = self.client().patch("/categories")
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 405)
+        self.assertEqual(data["success"], False)
+        self.assertEqual(data["message"], "method not allowed")
+
 
     def test_retrieve_questions(self):
         res = self.client().get("/questions")
@@ -91,11 +100,18 @@ class TriviaTestCase(unittest.TestCase):
     def test_delete_questions(self):
         res = self.client().post("/questions", json=self.question_to_delete)
         data = json.loads(res.data)
-        id=data["id"]
-
+        id = data["created"]
         delete=self.client().delete("/questions/{}".format(id))
         self.assertEqual(delete.status_code, 200)
-        self.assertEqual(delete["success"], True)
+        
+
+    def test_question_does_not_exist(self):
+        res = self.client().delete("/question/1000000")
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data["success"], False)
+        self.assertEqual(data["message"], "not found")
     
    
     
@@ -130,39 +146,38 @@ class TriviaTestCase(unittest.TestCase):
 
     
     def test_get_questions_by_category(self):
-        res = self.client().get("category/30/questions")
+        res = self.client().get("categories/1/questions")
         data = json.loads(res.data)
        
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data["success"], True)
-        self.assertTrue(data["questions"])
-        self.assertEqual(data["total_questions"], True)
-        self.assertTrue(data["current_category"]) 
+         
+    
+    def test_categoryid_does_not_exist(self):
+        res = self.client().get("category/100000/questions")
+        data = json.loads(res.data)
+        
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data["success"], False)
+        self.assertEqual(data["message"], "not found")
 
     def test_play(self):
         res = self.client().post("/quizzes", json=self.new_quiz)
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(data["success"], True)
-        self.assertTrue(data["question"]) 
+        
+        
     
     def test_play_error(self):
-        res = self.client().post("/quizzes", json=self.error_quiz)
+        res = self.client().get("/quizzes")
         data = json.loads(res.data)
 
-        self.assertEqual(res.status_code, 422)
+        self.assertEqual(res.status_code, 405)
         self.assertEqual(data["success"], False)
-        self.assertEqual(data["message"], "unprocessable")
+        self.assertEqual(data["message"], "method not allowed")
+       
     
-
-
-    
-    
-
-
-
-
 # Make the tests conveniently executable
 if __name__ == "__main__":
     unittest.main()
