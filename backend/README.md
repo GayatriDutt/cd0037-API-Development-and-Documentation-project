@@ -71,11 +71,11 @@ One note before you delve into your tasks: for each endpoint, you are expected t
 
 You will need to provide detailed documentation of your API endpoints including the URL, request parameters, and the response body. Use the example below as a reference.
 
-Get/Categories
+# Get/Categories
 
-General: Returns a list of categories
-Sample: curl http://localhost:5000/categories
-Example response:
+1. General: Returns a list of categories
+2. Sample: curl http://localhost:5000/categories
+3. Example response:
 {
   "categories":{
         "1": "Science",
@@ -85,6 +85,7 @@ Example response:
         "5": "Entertainment",
         "6": "Sport}
 }
+
 
 
 
