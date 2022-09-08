@@ -71,6 +71,23 @@ One note before you delve into your tasks: for each endpoint, you are expected t
 
 You will need to provide detailed documentation of your API endpoints including the URL, request parameters, and the response body. Use the example below as a reference.
 
+Get/Categories
+
+General: Returns a list of categories
+Sample: curl http://localhost:5000/categories
+Example response:
+{
+  "categories":{
+        "1": "Science",
+        "2": "Art",
+        "3": "Geography",
+        "4": "History",
+        "5": "Entertainment",
+        "6": "Sport}
+}
+
+
+
 ### Documentation Example
 
 `GET '/api/v1.0/categories'`
