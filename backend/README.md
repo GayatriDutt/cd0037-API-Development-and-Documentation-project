@@ -71,7 +71,7 @@ One note before you delve into your tasks: for each endpoint, you are expected t
 
 You will need to provide detailed documentation of your API endpoints including the URL, request parameters, and the response body. Use the example below as a reference.
 
-# Get/Categories
+# Get/categories
 
 1. General: Returns a list of categories
 2. Sample: curl http://localhost:5000/categories
@@ -85,8 +85,40 @@ You will need to provide detailed documentation of your API endpoints including 
         "5": "Entertainment",
         "6": "Sport}
 }
+# Get/questions
+1. General: Returns questions
+2. Sample:  curl http://localhost:5000/questions
+3. Example response: 
+```json
+
+    {"categories": {
+        "1": "Science",
+        "2": "Art",
+        "3": "Geography",
+        "4": "History",
+        "5": "Entertainment",
+        "6": "Sports"
+    },
+    "currentCategory": null,
+    "questions": [
+        {
+            "answer": "North Pole",
+            "category": 4,
+            "difficulty": 2,
+            "id": 5,
+            "question": "Where do polar bears live'?"
+        },
+        {
+            "answer": 1,
+            "category": 4,
+            "difficulty": 1,
+            "id": 9,
+            "question": "What is 4-3??"
+        }]
+        "totalQuestions": 2}
 
 
+```
 
 
 ### Documentation Example
