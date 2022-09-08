@@ -72,7 +72,7 @@ One note before you delve into your tasks: for each endpoint, you are expected t
 ## Not Found
 ```json
 {
-    "success": False,
+    "success": "False",
     "error": 404, 
     "message": "Not found"
 }
@@ -81,14 +81,14 @@ One note before you delve into your tasks: for each endpoint, you are expected t
 ## Unprocessable entity
 ```json
 {
-    "success": False,
+    "success": "False",
     "error": 424, 
     "message": "unprocessable"
 }
 ```
 # Method Not Allowed
 ```json
-"success": False,
+    "success": "False",
     "error": 405, 
     "message": "method not allowed"
 ```
@@ -176,7 +176,7 @@ You will need to provide detailed documentation of your API endpoints including 
             "difficulty": 2,
             "id": 5,
             "question": "Where do polar bears live?"
-        },]
+        }]
         "totalQuestions": 1
 }
 ```
