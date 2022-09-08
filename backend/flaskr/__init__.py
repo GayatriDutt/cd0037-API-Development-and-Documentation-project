@@ -10,7 +10,7 @@ from models import setup_db, Question, Category
 db = SQLAlchemy()
 QUESTIONS_PER_PAGE = 10
 
-
+# function to paginate questions
 def paginate(request, selection):
     page = request.args.get("page", 1, type=int)
     start = (page - 1) * QUESTIONS_PER_PAGE
@@ -26,6 +26,7 @@ def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__)
     setup_db(app)
+    # setting up CORS
     CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     @app.after_request
@@ -51,8 +52,10 @@ def create_app(test_config=None):
     Create an endpoint to handle GET requests
     for all available categories.
     """
+    # Defining an endpoint to retrieve all categories
     @app.route("/categories", methods=["GET"])
     def retrieve_categories():
+        #select categories
         selection = Category.query.all()
         list = {}
         for i in selection:
@@ -77,9 +80,12 @@ def create_app(test_config=None):
     ten questions per page and pagination at the bottom of the screen for three pages.
     Clicking on the page numbers should update the questions.
     """
+    #defining an endpoint for retrieving all questions
     @app.route("/questions", methods=["GET"])
     def retrieve_questions():
+    #select all questions
       selection = Question.query.all()
+    #paginate questions
       current_questions = paginate(request, selection)
 
       categories = Category.query.all()
@@ -99,12 +105,15 @@ def create_app(test_config=None):
     TEST: When you click the trash icon next to a question, the question will be removed.
     This removal will persist in the database and when you refresh the page.
     """
+    #defining an endpoint for deleting a question given its ID
     @app.route("/questions/<int:question_id>", methods=["DELETE"])
     def delete_questions(question_id):
         try:
+            #Find the question to be deleted based on ID
             q = Question.query.filter(Question.id == question_id).one_or_none()
 
             if q is None:
+                #Resource not found error if the ID does not actually exist
                 abort(404)
 
             q.delete()
@@ -128,15 +137,17 @@ def create_app(test_config=None):
     the form will clear and the question will appear at the end of the last page
     of the questions list in the "List" tab.
     """
+    #Defining an endpoint to create a new question
     @app.route("/questions", methods=["POST"])
     def create_question():
+        #Use get_json to get user input for new question, answer, difficulty and category
         body = request.get_json()
 
         new_question = body.get("question", None)
         new_difficulty = body.get("difficulty", None)
         new_answer = body.get("answer", None)
         new_category = body.get("category", None)
-
+        #Add the question to database
         try:
             q = Question(question=new_question, answer=new_answer,
                          difficulty=new_difficulty, category=new_category)
@@ -168,13 +179,15 @@ def create_app(test_config=None):
     Try using the word "title" to start.
 
     """
+    #Defining an endpoint to search for questions based on a user defined search term
     @app.route("/questions/search", methods=["POST"])
     def search_for_question():
+     #Allow user to enter the search term   
      body = request.get_json()
      search_term = body.get("searchTerm")
 
      try:
-
+        #Filter questions based on search term provided
          selection = Question.query.filter(
              Question.question.ilike('%{}%'.format(search_term))).all()
 
@@ -198,17 +211,19 @@ def create_app(test_config=None):
     categories in the left column will cause only questions of that
     category to be shown.
     """
+    #Defining an endpoint to get questions based on a specified category
     @app.route("/categories/<int:category_id>/questions", methods=["GET"])
     def get_questions_by_category(category_id):
 
         try:
-
+            #Find relevant category using category ID provided by user
             c = Category.query.get(category_id)
-            
+            #Find questions based on above category ID
             questions = Question.query.filter_by(category=str(c)).all()
             list = []
 
             for question in questions:
+            #Append questions to list
                 list.append(question.format())
 
             return jsonify(
@@ -221,7 +236,7 @@ def create_app(test_config=None):
             )
 
         except Exception as ex:
-            print("******", ex)
+            
             abort(422)
 
 
@@ -236,22 +251,22 @@ def create_app(test_config=None):
     one question at a time is displayed, the user is allowed to answer
     and shown whether they were correct or not.
     """
-
+    #Define an endpoint for playing the quiz
     @app.route("/quizzes", methods=["POST"])
     def play():
-
+        #Get previous questions and the quiz category from user
         body = request.get_json() 
         previous_questions = body.get("previous_questions")
         category = body.get("quiz_category") 
         questions = Question.query.filter_by(category=category.get("id")).all()
-        print()
+       
 
         next_questions = []
-
+        #Find next question to return
         for question in questions:
             if question.id not in previous_questions:
                 next_questions.append(question)
-                
+                #Break loop when question is found
                 break
 
         return jsonify({"question": next_questions[0].format()})
@@ -266,7 +281,7 @@ def create_app(test_config=None):
     including 404 and 422.
     """
 
-
+#Setting up error handlers for 404,422,405
     @app.errorhandler(404)
     def not_found(error):
      return (
